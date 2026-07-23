@@ -11,6 +11,7 @@ export const PdfTemplate = React.forwardRef(({ formData }, ref) => {
     clientName,
     clientAddress,
     clientDepartment,
+    clientPhone,
     items = [],
     hasColocacion,
     colocacionAmount,
