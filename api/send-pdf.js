@@ -9,11 +9,31 @@ const formatCurrency = (amount) => {
 };
 
 export default async function handler(req, res) {
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
+    let bodyData = req.body;
+    if (typeof bodyData === 'string') {
+      try {
+        bodyData = JSON.parse(bodyData);
+      } catch (e) {}
+    }
+
     const {
       docNumber,
       issueDate,
@@ -27,14 +47,14 @@ export default async function handler(req, res) {
       hasEnvio,
       envioAmount,
       totalFormatted
-    } = req.body || {};
+    } = bodyData || {};
 
     const fallbackKey = Buffer.from('cmVfQ20yOVdhYW5fZUVHRnIyWTFQeVdhQ1JtTGlhOVZRNjFX', 'base64').toString('utf-8');
     const resendApiKey = process.env.RESEND_API_KEY || fallbackKey;
     const targetEmail = 'presupuestovidrieriavallcanera@gmail.com';
 
     // Calculos de formato de precios
-    const subtotalNum = items.reduce((acc, item) => {
+    const subtotalNum = (items || []).reduce((acc, item) => {
       const q = parseFloat(item.quantity) || 0;
       const p = parseFloat(item.unitPrice) || 0;
       return acc + (q * p);
@@ -48,7 +68,7 @@ export default async function handler(req, res) {
     const envioFormatted = formatCurrency(envioVal);
 
     // Generar filas HTML de los ítems
-    const itemsRowsHtml = items.map((item, idx) => {
+    const itemsRowsHtml = (items || []).map((item, idx) => {
       const q = parseFloat(item.quantity) || 0;
       const p = parseFloat(item.unitPrice) || 0;
       const imp = q * p;
@@ -66,7 +86,7 @@ export default async function handler(req, res) {
       `;
     }).join('');
 
-    // Plantilla HTML del Email (Ultra ligera y visual)
+    // Plantilla HTML del Email
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; background-color: #f4f4f5; padding: 20px; color: #18181b;">
         <div style="max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 25px; border: 1px solid #e4e4e7;">
@@ -139,7 +159,7 @@ export default async function handler(req, res) {
               </div>
             ` : ''}
             <div style="margin-top: 8px; padding: 10px; background-color: #18181b; color: #ffffff; border-radius: 8px; font-size: 16px; font-weight: 800;">
-              TOTAL: <span style="color: #34d399;">${totalFormatted}</span>
+              TOTAL: <span style="color: #34d399;">${totalFormatted || formatCurrency(subtotalNum + colocacionVal + envioVal)}</span>
             </div>
           </div>
 
@@ -161,7 +181,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: 'onboarding@resend.dev',
         to: [targetEmail],
-        subject: `${docNumber} - ${clientName || 'Cliente'} (Presupuesto)`,
+        subject: `${docNumber || '03600'} - ${clientName || 'Cliente'} (Presupuesto)`,
         html: emailHtml
       })
     });
@@ -170,12 +190,12 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       console.error('Error de API Resend:', data);
-      return res.status(response.status).json({ error: data.message || 'Error enviando correo' });
+      return res.status(response.status).json({ success: false, error: data.message || data.name || JSON.stringify(data) });
     }
 
     return res.status(200).json({ success: true, id: data.id });
   } catch (error) {
     console.error('Server error enviando correo:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
 }
