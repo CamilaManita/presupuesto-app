@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, X, Eye, CheckCircle } from 'lucide-react';
+import { Download, X, Eye, CheckCircle, AlertCircle } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import PdfTemplate from './PdfTemplate';
 import { formatCurrency, formatDocNumber } from '../utils/formatters';
@@ -12,9 +12,17 @@ export const PdfPreviewModal = ({
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const pdfRef = React.useRef(null);
 
   if (!isOpen) return null;
+
+  const triggerToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 5000);
+  };
 
   const handleDownloadPdf = async () => {
     if (!pdfRef.current) return;
@@ -33,11 +41,9 @@ export const PdfPreviewModal = ({
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
 
-      // 1. Descargar el PDF localmente en el celular/computadora
       await html2pdf().set(opt).from(pdfRef.current).save();
       setDownloaded(true);
 
-      // 2. Calcular Totales
       const itemsSubtotal = (formData.items || []).reduce((acc, item) => {
         const q = parseFloat(item.quantity) || 0;
         const p = parseFloat(item.unitPrice) || 0;
@@ -47,7 +53,6 @@ export const PdfPreviewModal = ({
       const envioVal = formData.hasEnvio ? (parseFloat(formData.envioAmount) || 0) : 0;
       const totalFormatted = formatCurrency(itemsSubtotal + colocacionVal + envioVal);
 
-      // 3. Enviar copia escrita por correo a través del endpoint servidor /api/send-pdf
       fetch('/api/send-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,22 +75,21 @@ export const PdfPreviewModal = ({
           const data = await res.json();
           if (res.ok && data.success) {
             console.log('Correo enviado con éxito, ID de Resend:', data.id);
-            alert('¡PDF descargado y copia enviada exitosamente a presupuestovidrieriavallcanera@gmail.com!');
+            triggerToast('¡PDF descargado y copia enviada a presupuestovidrieriavallcanera@gmail.com!', 'success');
           } else {
             console.warn('Respuesta del servidor:', data);
-            alert('PDF descargado. Respuesta del servidor de correos: ' + (data.error || JSON.stringify(data)));
+            triggerToast('PDF descargado. Nota: ' + (data.error || 'Aviso de correo.'), 'warning');
           }
         })
         .catch(err => {
           console.error('Error al conectar con la API:', err);
-          alert('PDF descargado. Nota: Ocurrió un error al contactar al servidor: ' + err.message);
+          triggerToast('PDF descargado localmente.', 'warning');
         });
 
-      // Incrementar automáticamente el número de documento para el próximo presupuesto
       onIncrementDocNumber();
     } catch (err) {
       console.error('Error generando PDF:', err);
-      alert('Ocurrió un error al generar el PDF. Por favor intenta nuevamente.');
+      triggerToast('Ocurrió un error al generar el PDF.', 'warning');
     } finally {
       setIsGenerating(false);
     }
@@ -93,6 +97,23 @@ export const PdfPreviewModal = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+      {toast.show && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] max-w-md w-[92%] px-4 py-3.5 rounded-2xl shadow-2xl backdrop-blur-xl border flex items-center gap-3 bg-stone-900/95 border-emerald-500/30 text-white animate-in fade-in slide-in-from-top-4 transition-all">
+          {toast.type === 'success' ? (
+            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+          ) : (
+            <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
+          )}
+          <p className="text-xs sm:text-sm font-semibold leading-tight text-stone-100 flex-1">{toast.message}</p>
+          <button 
+            type="button" 
+            onClick={() => setToast({ show: false, message: '', type: 'success' })}
+            className="text-stone-400 hover:text-white p-1 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       <div className="bg-stone-100 rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto border border-stone-300">
         
         {/* Modal Header */}

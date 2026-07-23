@@ -91,18 +91,20 @@ export default async function handler(req, res) {
       <div style="font-family: Arial, sans-serif; background-color: #f4f4f5; padding: 20px; color: #18181b;">
         <div style="max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 25px; border: 1px solid #e4e4e7;">
           
-          <!-- Encabezado -->
-          <div style="border-bottom: 2px solid #18181b; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-              <h2 style="margin: 0; font-size: 22px; font-weight: 300; letter-spacing: 3px; color: #18181b;">VIDRIERIA</h2>
-              <div style="font-size: 14px; font-weight: 600; color: #3f3f46; margin-top: 2px;">Vallcanera</div>
-            </div>
-            <div style="text-align: right; font-size: 13px; color: #52525b; line-height: 1.4;">
-              <div><strong>Nº Documento:</strong> <span style="color: #18181b; font-weight: bold;">${docNumber || '-'}</span></div>
-              <div><strong>Emisión:</strong> ${issueDate || '-'}</div>
-              <div><strong>Válido Hasta:</strong> ${validUntil || '-'}</div>
-            </div>
-          </div>
+          <!-- Encabezado Estético Unificado -->
+          <table style="width: 100%; border-collapse: collapse; border-bottom: 2px solid #18181b; margin-bottom: 20px; padding-bottom: 15px;">
+            <tr>
+              <td style="vertical-align: top; text-align: left; padding-bottom: 12px;">
+                <div style="font-size: 22px; font-weight: 300; letter-spacing: 4px; color: #18181b; line-height: 1.1;">VIDRIERIA</div>
+                <div style="font-size: 14px; font-weight: 700; color: #3f3f46; letter-spacing: 1.5px; margin-top: 3px;">VALLCANERA</div>
+              </td>
+              <td style="vertical-align: top; text-align: right; padding-bottom: 12px; font-size: 13px; color: #52525b; line-height: 1.5;">
+                <div><strong style="color: #18181b;">Nº Documento:</strong> <span style="color: #047857; font-weight: bold;">${docNumber || '-'}</span></div>
+                <div><strong>Emisión:</strong> ${issueDate || '-'}</div>
+                <div><strong>Válido Hasta:</strong> ${validUntil || '-'}</div>
+              </td>
+            </tr>
+          </table>
 
           <h1 style="font-size: 24px; font-weight: 800; margin: 0 0 15px 0; color: #18181b;">Presupuesto</h1>
 
