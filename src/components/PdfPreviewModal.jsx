@@ -21,7 +21,7 @@ export const PdfPreviewModal = ({
     setIsGenerating(true);
 
     try {
-      const docNumStr = formatDocNumber(formData.docNumber);
+      const docNumStr = formatDocNumber(formData.docNumber, formData.docSeriesLetter);
       const cleanClientName = (formData.clientName || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_');
       const filename = `Presupuesto_${docNumStr}_${cleanClientName}.pdf`;
 
@@ -74,7 +74,7 @@ export const PdfPreviewModal = ({
         {/* Modal Footer - Botón de Descargar PDF */}
         <div className="bg-white px-4 sm:px-6 py-4 border-t border-stone-200 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
           <div className="text-xs text-stone-500 text-center sm:text-left">
-            Presupuesto Nº <strong className="text-stone-800">{formatDocNumber(formData.docNumber)}</strong> listo para descargar.
+            Presupuesto Nº <strong className="text-stone-800">{formatDocNumber(formData.docNumber, formData.docSeriesLetter)}</strong> listo para descargar.
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">

@@ -5,6 +5,7 @@ import { formatCurrency, formatDocNumber } from '../utils/formatters';
 export const PdfTemplate = React.forwardRef(({ formData }, ref) => {
   const {
     docNumber,
+    docSeriesLetter,
     issueDate,
     validUntil,
     clientName,
@@ -45,7 +46,7 @@ export const PdfTemplate = React.forwardRef(({ formData }, ref) => {
           <div className="text-right text-stone-700 text-sm space-y-1 font-medium">
             <div className="flex justify-between gap-6">
               <span className="text-stone-500">Nº de Documento:</span>
-              <span className="font-bold text-stone-900">{formatDocNumber(docNumber)}</span>
+              <span className="font-bold text-stone-900">{formatDocNumber(docNumber, docSeriesLetter)}</span>
             </div>
             <div className="flex justify-between gap-6">
               <span className="text-stone-500">Fecha de Emisión:</span>

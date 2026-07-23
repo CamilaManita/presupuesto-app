@@ -5,6 +5,8 @@ import { formatCurrency } from '../utils/formatters';
 export const PresupuestoForm = ({
   formData,
   setFormData,
+  docSeriesLetter,
+  setDocSeriesLetter,
   onGeneratePdf,
   onResetDocNumber
 }) => {
@@ -70,20 +72,38 @@ export const PresupuestoForm = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-              Nº Documento (Auto)
+              Nº Documento & Serie
             </label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <input
                 type="text"
                 readOnly
                 value={String(formData.docNumber).padStart(5, '0')}
-                className="w-full bg-stone-100 border border-stone-300 text-stone-800 font-bold px-3 py-2.5 rounded-xl text-center focus:outline-none"
+                className="w-full bg-stone-100 border border-stone-300 text-stone-800 font-bold px-2 py-2.5 rounded-xl text-center focus:outline-none text-sm"
               />
+              <span className="font-extrabold text-stone-500 text-base">-</span>
+              <div className="w-14 shrink-0">
+                <input
+                  type="text"
+                  maxLength={1}
+                  value={docSeriesLetter || ''}
+                  onChange={(e) => {
+                    const char = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+                    setDocSeriesLetter(char);
+                  }}
+                  onBlur={() => {
+                    if (!docSeriesLetter) setDocSeriesLetter('A');
+                  }}
+                  placeholder="A"
+                  title="Letra de serie del documento (una sola letra)"
+                  className="w-full bg-white border border-stone-300 text-indigo-700 font-extrabold px-2 py-2.5 rounded-xl text-center uppercase focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-base shadow-inner"
+                />
+              </div>
               <button
                 type="button"
                 onClick={onResetDocNumber}
-                title="Reiniciar o ajustar número"
-                className="text-xs text-stone-500 underline hover:text-stone-800 whitespace-nowrap"
+                title="Reiniciar o ajustar número base"
+                className="text-xs text-stone-500 underline hover:text-stone-800 whitespace-nowrap pl-1"
               >
                 Cambiar
               </button>

@@ -12,11 +12,12 @@ export const formatCurrency = (amount) => {
 };
 
 /**
- * Formatea número de documento a 5 dígitos (ej: 3600 -> 03600)
+ * Formatea número de documento a 5 dígitos + letra de serie (ej: 3600, 'A' -> 03600-A)
  */
-export const formatDocNumber = (num) => {
+export const formatDocNumber = (num, letter = 'A') => {
   const numericVal = parseInt(num, 10) || 3600;
-  return String(numericVal).padStart(5, '0');
+  const cleanLetter = (letter || 'A').toString().trim().toUpperCase().charAt(0) || 'A';
+  return `${String(numericVal).padStart(5, '0')}-${cleanLetter}`;
 };
 
 /**

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Logo from './components/Logo';
 import PresupuestoForm from './components/PresupuestoForm';
 import PdfPreviewModal from './components/PdfPreviewModal';
-import { getTodayDate, getDefaultValidUntil } from './utils/formatters';
+import { getTodayDate, getDefaultValidUntil, formatDocNumber } from './utils/formatters';
 
 export function App() {
   // Número incremental persistente en localStorage (inicio en 3600)
@@ -11,9 +11,16 @@ export function App() {
     return saved ? parseInt(saved, 10) : 3600;
   });
 
+  // Letra de serie persistente en localStorage (defecto 'A')
+  const [docSeriesLetter, setDocSeriesLetter] = useState(() => {
+    const saved = localStorage.getItem('vv_presupuesto_series_letter');
+    return saved ? saved.toUpperCase().charAt(0) : 'A';
+  });
+
   // Estado global del formulario
   const [formData, setFormData] = useState({
     docNumber: 3600,
+    docSeriesLetter: 'A',
     issueDate: getTodayDate(),
     validUntil: getDefaultValidUntil(7),
     clientName: '',
@@ -33,11 +40,13 @@ export function App() {
     envioAmount: 0
   });
 
-  // Mantener el docNumber sincronizado en el formData y localStorage
+  // Mantener el docNumber y docSeriesLetter sincronizados en el formData y localStorage
   useEffect(() => {
     localStorage.setItem('vv_presupuesto_doc_number', docNumber.toString());
-    setFormData(prev => ({ ...prev, docNumber }));
-  }, [docNumber]);
+    const validLetter = docSeriesLetter ? docSeriesLetter.toUpperCase().charAt(0) : 'A';
+    localStorage.setItem('vv_presupuesto_series_letter', validLetter);
+    setFormData(prev => ({ ...prev, docNumber, docSeriesLetter: validLetter }));
+  }, [docNumber, docSeriesLetter]);
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -80,7 +89,7 @@ export function App() {
               Documento N°
             </span>
             <span className="text-sm font-extrabold text-stone-900 bg-stone-100 px-2 py-0.5 rounded-md border border-stone-200 inline-block">
-              {String(docNumber).padStart(5, '0')}
+              {formatDocNumber(docNumber, docSeriesLetter)}
             </span>
           </div>
         </div>
@@ -100,6 +109,8 @@ export function App() {
         <PresupuestoForm
           formData={formData}
           setFormData={setFormData}
+          docSeriesLetter={docSeriesLetter}
+          setDocSeriesLetter={setDocSeriesLetter}
           onGeneratePdf={handleGeneratePdf}
           onResetDocNumber={handleResetDocNumber}
         />
