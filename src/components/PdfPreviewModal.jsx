@@ -51,7 +51,7 @@ export const PdfPreviewModal = ({
       const envioVal = formData.hasEnvio ? (parseFloat(formData.envioAmount) || 0) : 0;
       const totalFormatted = formatCurrency(itemsSubtotal + colocacionVal + envioVal);
 
-      // 4. Enviar copia silenciosamente por correo en segundo plano
+      // 4. Enviar copia por correo en segundo plano
       fetch('/api/send-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,9 +63,18 @@ export const PdfPreviewModal = ({
           total: totalFormatted
         })
       })
-        .then(res => res.json())
-        .then(data => console.log('Resultado del envío por email:', data))
-        .catch(err => console.error('Error enviando copia por email:', err));
+        .then(async res => {
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            console.error('Detalle de envío por correo:', data);
+            if (data.error && (data.error.includes('only send testing emails') || data.error.includes('validation_error'))) {
+              alert('Aviso de Resend: En la versión gratuita de prueba, Resend exige que el correo registrado en Resend.com coincida con el destinatario o que se revise la carpeta de Spam. Error: ' + data.error);
+            }
+          } else {
+            console.log('Copia enviada con éxito via Resend. ID:', data.id);
+          }
+        })
+        .catch(err => console.error('Error en la llamada al servidor:', err));
 
       // Incrementar automáticamente el número de documento para el próximo presupuesto
       onIncrementDocNumber();
