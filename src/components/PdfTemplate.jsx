@@ -80,14 +80,18 @@ export const PdfTemplate = React.forwardRef(({ formData }, ref) => {
           <div className="space-y-1">
             <h3 className="font-bold text-stone-900 text-base mb-2">Facturar A:</h3>
             <p className="font-bold text-stone-900 text-base">
-              {clientName || <span className="text-stone-400 italic">[Nombre del Cliente]</span>}
+              {clientName}
             </p>
-            <p className="text-stone-600">
-              {clientAddress || <span className="text-stone-400 italic">[Dirección]</span>}
-            </p>
-            <p className="text-stone-600">
-              {clientDepartment || <span className="text-stone-400 italic">[Departamento]</span>}
-            </p>
+            {clientAddress && (
+              <p className="text-stone-600">
+                {clientAddress}
+              </p>
+            )}
+            {clientDepartment && (
+              <p className="text-stone-600">
+                {clientDepartment}
+              </p>
+            )}
             {clientPhone && (
               <p className="text-stone-600 font-medium">
                 Tel: {clientPhone}

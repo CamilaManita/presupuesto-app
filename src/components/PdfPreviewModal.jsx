@@ -131,10 +131,12 @@ export const PdfPreviewModal = ({
           </button>
         </div>
 
-        {/* Modal Body - Contenedor con Scroll para Previsualizar */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8 bg-stone-200/60 flex justify-center">
-          <div className="shadow-2xl rounded-xl overflow-hidden bg-white max-w-full">
-            <PdfTemplate ref={pdfRef} formData={formData} />
+        {/* Modal Body - Contenedor A4 Adaptativo Completo */}
+        <div className="flex-1 overflow-y-auto p-2 sm:p-6 bg-stone-400/20 flex justify-center items-start">
+          <div className="w-full max-w-[800px] shadow-2xl rounded-xl bg-white border border-stone-300 overflow-x-auto">
+            <div className="min-w-[650px] sm:min-w-0">
+              <PdfTemplate ref={pdfRef} formData={formData} />
+            </div>
           </div>
         </div>
 
