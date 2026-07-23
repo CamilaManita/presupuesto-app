@@ -1,24 +1,148 @@
+import { formatCurrency } from '../src/utils/formatters.js';
+
 export default async function handler(req, res) {
-  // Permitir solicitudes POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { pdfBase64, filename, clientName, docNumber, total } = req.body || {};
+    const {
+      docNumber,
+      issueDate,
+      validUntil,
+      clientName,
+      clientAddress,
+      clientDepartment,
+      items = [],
+      hasColocacion,
+      colocacionAmount,
+      hasEnvio,
+      envioAmount,
+      totalFormatted
+    } = req.body || {};
 
-    if (!pdfBase64) {
-      return res.status(400).json({ error: 'pdfBase64 es requerido' });
-    }
-
-    // Limpiar prefijo data URI si está presente
-    const cleanBase64 = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
-
-    // Obtener clave API (con fallback codificado para evitar escaneo automático de patrones de GitHub)
     const fallbackKey = Buffer.from('cmVfQ20yOVdhYW5fZUVHRnIyWTFQeVdhQ1JtTGlhOVZRNjFX', 'base64').toString('utf-8');
     const resendApiKey = process.env.RESEND_API_KEY || fallbackKey;
-
     const targetEmail = 'presupuestovidrieriavallcanera@gmail.com';
+
+    // Calculos de formato de precios
+    const subtotalNum = items.reduce((acc, item) => {
+      const q = parseFloat(item.quantity) || 0;
+      const p = parseFloat(item.unitPrice) || 0;
+      return acc + (q * p);
+    }, 0);
+    const subtotalFormatted = formatCurrency(subtotalNum);
+
+    const colocacionVal = hasColocacion ? (parseFloat(colocacionAmount) || 0) : 0;
+    const colocacionFormatted = formatCurrency(colocacionVal);
+
+    const envioVal = hasEnvio ? (parseFloat(envioAmount) || 0) : 0;
+    const envioFormatted = formatCurrency(envioVal);
+
+    // Generar filas HTML de los ítems
+    const itemsRowsHtml = items.map((item, idx) => {
+      const q = parseFloat(item.quantity) || 0;
+      const p = parseFloat(item.unitPrice) || 0;
+      const imp = q * p;
+      return `
+        <tr style="border-bottom: 1px solid #e4e4e7;">
+          <td style="padding: 10px; text-align: center; color: #71717a;">${idx + 1}</td>
+          <td style="padding: 10px;">
+            <div style="font-weight: bold; color: #18181b;">${item.name || 'Sin Nombre'}</div>
+            ${item.description ? `<div style="font-size: 12px; color: #71717a; margin-top: 2px;">${item.description}</div>` : ''}
+          </td>
+          <td style="padding: 10px; text-align: center; font-weight: 500;">${q}</td>
+          <td style="padding: 10px; text-align: right;">${formatCurrency(p)}</td>
+          <td style="padding: 10px; text-align: right; font-weight: bold; color: #18181b;">${formatCurrency(imp)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    // Plantilla HTML del Email (Ultra ligera y visual)
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; background-color: #f4f4f5; padding: 20px; color: #18181b;">
+        <div style="max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 25px; border: 1px solid #e4e4e7;">
+          
+          <!-- Encabezado -->
+          <div style="border-bottom: 2px solid #18181b; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h2 style="margin: 0; font-size: 22px; font-weight: 300; letter-spacing: 3px; color: #18181b;">VIDRIERIA</h2>
+              <div style="font-size: 14px; font-weight: 600; color: #3f3f46; margin-top: 2px;">Vallcanera</div>
+            </div>
+            <div style="text-align: right; font-size: 13px; color: #52525b; line-height: 1.4;">
+              <div><strong>Nº Documento:</strong> <span style="color: #18181b; font-weight: bold;">${docNumber || '-'}</span></div>
+              <div><strong>Emisión:</strong> ${issueDate || '-'}</div>
+              <div><strong>Válido Hasta:</strong> ${validUntil || '-'}</div>
+            </div>
+          </div>
+
+          <h1 style="font-size: 24px; font-weight: 800; margin: 0 0 15px 0; color: #18181b;">Presupuesto</h1>
+
+          <!-- Bloques Recibido De / Facturar A -->
+          <table style="width: 100%; margin-bottom: 20px; font-size: 13px; border-collapse: collapse;">
+            <tr>
+              <td style="width: 50%; vertical-align: top; padding-right: 10px;">
+                <strong style="color: #18181b; display: block; margin-bottom: 5px;">Recibido De:</strong>
+                <div style="color: #3f3f46; line-height: 1.4;">
+                  <div>Luis Antonio Di Salvo</div>
+                  <div>Juan D Vallcanera 412</div>
+                  <div>Luján de Cuyo</div>
+                  <div>2616252747</div>
+                </div>
+              </td>
+              <td style="width: 50%; vertical-align: top; padding-left: 10px; background-color: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #f4f4f5;">
+                <strong style="color: #18181b; display: block; margin-bottom: 5px;">Facturar A:</strong>
+                <div style="color: #18181b; font-weight: bold; font-size: 14px;">${clientName || 'Sin especificar'}</div>
+                ${clientAddress ? `<div style="color: #52525b;">${clientAddress}</div>` : ''}
+                ${clientDepartment ? `<div style="color: #52525b;">${clientDepartment}</div>` : ''}
+              </td>
+            </tr>
+          </table>
+
+          <!-- Tabla de Ítems -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
+            <thead>
+              <tr style="background-color: #27272a; color: #ffffff;">
+                <th style="padding: 10px; text-align: center; width: 30px;">#</th>
+                <th style="padding: 10px; text-align: left;">Ítem</th>
+                <th style="padding: 10px; text-align: center; width: 60px;">Cant.</th>
+                <th style="padding: 10px; text-align: right; width: 110px;">Precio Unit.</th>
+                <th style="padding: 10px; text-align: right; width: 110px;">Importe</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsRowsHtml}
+            </tbody>
+          </table>
+
+          <!-- Resumen de Totales -->
+          <div style="margin-left: auto; width: 260px; font-size: 14px; text-align: right; margin-bottom: 20px;">
+            <div style="padding: 4px 0; border-top: 1px solid #e4e4e7; color: #52525b;">
+              Subtotal: <strong style="color: #18181b;">${subtotalFormatted}</strong>
+            </div>
+            ${hasColocacion ? `
+              <div style="padding: 4px 0; border-top: 1px solid #f4f4f5; color: #52525b;">
+                Colocación: <strong style="color: #18181b;">${colocacionFormatted}</strong>
+              </div>
+            ` : ''}
+            ${hasEnvio ? `
+              <div style="padding: 4px 0; border-top: 1px solid #f4f4f5; color: #52525b;">
+                Envío: <strong style="color: #18181b;">${envioFormatted}</strong>
+              </div>
+            ` : ''}
+            <div style="margin-top: 8px; padding: 10px; background-color: #18181b; color: #ffffff; border-radius: 8px; font-size: 16px; font-weight: 800;">
+              TOTAL: <span style="color: #34d399;">${totalFormatted}</span>
+            </div>
+          </div>
+
+          <!-- Pie de página -->
+          <div style="margin-top: 25px; pt: 15px; border-top: 1px solid #e4e4e7; text-align: center; font-size: 11px; color: #a1a1aa;">
+            Generado automáticamente por Vidriería Vallcanera — Presupuestos Digitales
+          </div>
+
+        </div>
+      </div>
+    `;
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -29,43 +153,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: 'onboarding@resend.dev',
         to: [targetEmail],
-        subject: `Nuevo Presupuesto N° ${docNumber || 'S/N'} - ${clientName || 'Cliente'}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; color: #2d2d2d; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px;">
-            <h2 style="color: #1c1917; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-top: 0;">
-              Copia de Presupuesto Emitido
-            </h2>
-            <p style="font-size: 14px; color: #4b5563;">
-              Se ha generado y descargado un nuevo presupuesto desde la aplicación web.
-            </p>
-            <table style="width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px;">
-              <tr style="background-color: #f9fafb;">
-                <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #e5e7eb;">Nº de Documento:</td>
-                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${docNumber || '-'}</td>
-              </tr>
-              <tr>
-                <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #e5e7eb;">Cliente / Facturar A:</td>
-                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${clientName || 'Sin nombre'}</td>
-              </tr>
-              <tr style="background-color: #f9fafb;">
-                <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #e5e7eb;">Monto Total:</td>
-                <td style="padding: 10px; font-weight: bold; color: #047857; border-bottom: 1px solid #e5e7eb;">${total || '-'}</td>
-              </tr>
-            </table>
-            <p style="font-size: 13px; color: #6b7280;">
-              El presupuesto completo se encuentra adjunto a este correo en formato PDF.
-            </p>
-            <div style="margin-top: 25px; pt-15px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 11px; color: #9ca3af;">
-              Vidriería Vallcanera — Sistema de Presupuestos Digitales
-            </div>
-          </div>
-        `,
-        attachments: [
-          {
-            filename: filename || `Presupuesto_${docNumber || '03600'}.pdf`,
-            content: cleanBase64
-          }
-        ]
+        subject: `${docNumber} - ${clientName || 'Cliente'} (Presupuesto)`,
+        html: emailHtml
       })
     });
 
@@ -73,12 +162,12 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       console.error('Error de API Resend:', data);
-      return res.status(response.status).json({ error: data.message || 'Error al enviar email via Resend' });
+      return res.status(response.status).json({ error: data.message || 'Error enviando correo' });
     }
 
     return res.status(200).json({ success: true, id: data.id });
   } catch (error) {
-    console.error('Error en el servidor al enviar email:', error);
+    console.error('Server error enviando correo:', error);
     return res.status(500).json({ error: error.message });
   }
 }

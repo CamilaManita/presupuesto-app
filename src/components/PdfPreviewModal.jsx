@@ -33,15 +33,11 @@ export const PdfPreviewModal = ({
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
 
-      // 1. Obtener la cadena Base64 del PDF
-      const worker = html2pdf().set(opt).from(pdfRef.current);
-      const pdfDataUri = await worker.outputPdf('datauristring');
-
-      // 2. Descargar el archivo localmente en el dispositivo
-      await worker.save();
+      // 1. Descargar el PDF localmente en el celular/computadora
+      await html2pdf().set(opt).from(pdfRef.current).save();
       setDownloaded(true);
 
-      // 3. Calcular Total para el cuerpo del correo
+      // 2. Calcular Totales
       const itemsSubtotal = (formData.items || []).reduce((acc, item) => {
         const q = parseFloat(item.quantity) || 0;
         const p = parseFloat(item.unitPrice) || 0;
@@ -51,30 +47,34 @@ export const PdfPreviewModal = ({
       const envioVal = formData.hasEnvio ? (parseFloat(formData.envioAmount) || 0) : 0;
       const totalFormatted = formatCurrency(itemsSubtotal + colocacionVal + envioVal);
 
-      // 4. Enviar copia por correo en segundo plano
+      // 3. Enviar copia escrita formateada por correo en segundo plano (Ultra ligero, sin PDF pesado)
       fetch('/api/send-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          pdfBase64: pdfDataUri,
-          filename: filename,
-          clientName: formData.clientName,
           docNumber: docNumStr,
-          total: totalFormatted
+          issueDate: formData.issueDate,
+          validUntil: formData.validUntil,
+          clientName: formData.clientName,
+          clientAddress: formData.clientAddress,
+          clientDepartment: formData.clientDepartment,
+          items: formData.items,
+          hasColocacion: formData.hasColocacion,
+          colocacionAmount: formData.colocacionAmount,
+          hasEnvio: formData.hasEnvio,
+          envioAmount: formData.envioAmount,
+          totalFormatted: totalFormatted
         })
       })
         .then(async res => {
           const data = await res.json();
           if (!res.ok || !data.success) {
-            console.error('Detalle de envío por correo:', data);
-            if (data.error && (data.error.includes('only send testing emails') || data.error.includes('validation_error'))) {
-              alert('Aviso de Resend: En la versión gratuita de prueba, Resend exige que el correo registrado en Resend.com coincida con el destinatario o que se revise la carpeta de Spam. Error: ' + data.error);
-            }
+            console.error('Error enviando copia por correo:', data);
           } else {
-            console.log('Copia enviada con éxito via Resend. ID:', data.id);
+            console.log('Copia escrita enviada por correo con éxito. ID:', data.id);
           }
         })
-        .catch(err => console.error('Error en la llamada al servidor:', err));
+        .catch(err => console.error('Error al conectar con la API de correo:', err));
 
       // Incrementar automáticamente el número de documento para el próximo presupuesto
       onIncrementDocNumber();
