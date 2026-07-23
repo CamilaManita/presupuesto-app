@@ -49,7 +49,7 @@ export default async function handler(req, res) {
       totalFormatted
     } = bodyData || {};
 
-    const fallbackKey = Buffer.from('cmVfQ20yOVdhYW5fZUVHRnIyWTFQeVdhQ1JtTGlhOVZRNjFX', 'base64').toString('utf-8');
+    const fallbackKey = Buffer.from('cmVfTVVLUTVBa0xfOW1pbnFDcG5UdERoMUVWMUY2TXAydFd5', 'base64').toString('utf-8');
     const resendApiKey = process.env.RESEND_API_KEY || fallbackKey;
     const targetEmail = 'presupuestovidrieriavallcanera@gmail.com';
 
