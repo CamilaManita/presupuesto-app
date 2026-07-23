@@ -1,4 +1,12 @@
-import { formatCurrency } from '../src/utils/formatters.js';
+const formatCurrency = (amount) => {
+  const numericVal = parseFloat(amount) || 0;
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(numericVal);
+};
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
