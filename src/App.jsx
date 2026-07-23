@@ -28,10 +28,10 @@ export function App() {
     clientDepartment: '',
     items: [
       {
-        name: 'Vidrio laminado 3+3',
-        description: 'Medida 1035mm x 1150mm Norte colocado',
+        name: '',
+        description: '',
         quantity: 1,
-        unitPrice: 156900
+        unitPrice: ''
       }
     ],
     hasColocacion: false,
