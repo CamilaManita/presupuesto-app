@@ -28,8 +28,8 @@ export const PdfPreviewModal = ({
       const opt = {
         margin: [0.3, 0.3, 0.3, 0.3],
         filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
+        image: { type: 'jpeg', quality: 0.85 },
+        html2canvas: { scale: 1.5, useCORS: true, logging: false },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
 
