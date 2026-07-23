@@ -14,7 +14,13 @@ export default async function handler(req, res) {
     // Limpiar prefijo data URI si está presente
     const cleanBase64 = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
 
-    const resendApiKey = process.env.RESEND_API_KEY || 're_22m8xmAX_BzAqpiC2PsCC14tb8yAAiPx2';
+    const resendApiKey = process.env.RESEND_API_KEY;
+
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY no está configurada en las variables de entorno de Vercel.');
+      return res.status(500).json({ error: 'Falta la variable de entorno RESEND_API_KEY en Vercel.' });
+    }
+
     const targetEmail = 'presupuestovidrieriavallcanera@gmail.com';
 
     const response = await fetch('https://api.resend.com/emails', {
