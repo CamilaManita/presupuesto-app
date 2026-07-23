@@ -22,8 +22,8 @@ export const PdfPreviewModal = ({
 
     try {
       const docNumStr = formatDocNumber(formData.docNumber, formData.docSeriesLetter);
-      const cleanClientName = (formData.clientName || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_');
-      const filename = `Presupuesto_${docNumStr}_${cleanClientName}.pdf`;
+      const cleanClientName = (formData.clientName || 'Cliente').trim().replace(/[/\\?%*:|"<>]/g, '');
+      const filename = `${docNumStr} - ${cleanClientName}.pdf`;
 
       const opt = {
         margin: [0.3, 0.3, 0.3, 0.3],
