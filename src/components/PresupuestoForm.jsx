@@ -69,48 +69,54 @@ export const PresupuestoForm = ({
           Datos del Documento
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
-              Nº Documento & Serie
-            </label>
-            <div className="flex items-center gap-1.5">
-              <input
-                type="text"
-                readOnly
-                value={String(formData.docNumber).padStart(5, '0')}
-                className="w-full bg-stone-100 border border-stone-300 text-stone-800 font-bold px-2 py-2.5 rounded-xl text-center focus:outline-none text-sm"
-              />
-              <span className="font-extrabold text-stone-500 text-base">-</span>
-              <div className="w-14 shrink-0">
-                <input
-                  type="text"
-                  maxLength={1}
-                  value={docSeriesLetter || ''}
-                  onChange={(e) => {
-                    const char = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
-                    setDocSeriesLetter(char);
-                  }}
-                  onBlur={() => {
-                    if (!docSeriesLetter) setDocSeriesLetter('A');
-                  }}
-                  placeholder="A"
-                  title="Letra de serie del documento (una sola letra)"
-                  className="w-full bg-white border border-stone-300 text-indigo-700 font-extrabold px-2 py-2.5 rounded-xl text-center uppercase focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-base shadow-inner"
-                />
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {/* Input 1: Número de Documento (Auto / No Editable) */}
+          <div className="sm:col-span-1">
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
+                Nº Documento (Auto)
+              </label>
               <button
                 type="button"
                 onClick={onResetDocNumber}
-                title="Reiniciar o ajustar número base"
-                className="text-xs text-stone-500 underline hover:text-stone-800 whitespace-nowrap pl-1"
+                title="Ajustar número correlativo base"
+                className="text-[10px] text-stone-400 underline hover:text-stone-700"
               >
-                Cambiar
+                Ajustar
               </button>
             </div>
+            <input
+              type="text"
+              readOnly
+              value={String(formData.docNumber).padStart(5, '0')}
+              className="w-full bg-stone-100 border border-stone-300 text-stone-700 font-extrabold px-3 py-2.5 rounded-xl text-center cursor-not-allowed select-none text-sm"
+            />
           </div>
 
-          <div>
+          {/* Input 2: Letra de Serie (Editable) */}
+          <div className="sm:col-span-1">
+            <label className="block text-xs font-semibold text-indigo-700 uppercase tracking-wider mb-1">
+              Letra de Serie (Editable) *
+            </label>
+            <input
+              type="text"
+              maxLength={1}
+              value={docSeriesLetter || ''}
+              onChange={(e) => {
+                const char = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+                setDocSeriesLetter(char);
+              }}
+              onBlur={() => {
+                if (!docSeriesLetter) setDocSeriesLetter('A');
+              }}
+              placeholder="A"
+              title="Ingrese una sola letra para la serie"
+              className="w-full bg-white border-2 border-indigo-500 text-indigo-900 font-extrabold px-3 py-2.5 rounded-xl text-center uppercase focus:ring-2 focus:ring-indigo-500 focus:outline-none text-base shadow-sm"
+            />
+          </div>
+
+          {/* Fecha de Emisión */}
+          <div className="sm:col-span-1">
             <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
               Fecha de Emisión
             </label>
@@ -118,11 +124,12 @@ export const PresupuestoForm = ({
               type="date"
               readOnly
               value={formData.issueDate}
-              className="w-full bg-stone-100 border border-stone-300 text-stone-700 px-3 py-2.5 rounded-xl font-medium focus:outline-none"
+              className="w-full bg-stone-100 border border-stone-300 text-stone-700 px-3 py-2.5 rounded-xl font-medium focus:outline-none text-sm cursor-not-allowed"
             />
           </div>
 
-          <div>
+          {/* Válido Hasta */}
+          <div className="sm:col-span-1">
             <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1 flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-indigo-600" />
               Válido Hasta *
@@ -131,9 +138,17 @@ export const PresupuestoForm = ({
               type="date"
               value={formData.validUntil}
               onChange={(e) => handleInputChange('validUntil', e.target.value)}
-              className="w-full bg-white border border-stone-300 text-stone-900 px-3 py-2.5 rounded-xl font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              className="w-full bg-white border border-stone-300 text-stone-900 px-3 py-2.5 rounded-xl font-medium text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
             />
           </div>
+        </div>
+
+        {/* Indicador del Formato Final resultante */}
+        <div className="text-xs bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 flex items-center justify-between text-stone-600">
+          <span>Identificador de Documento Resultante:</span>
+          <strong className="text-indigo-700 font-extrabold text-sm bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
+            {String(formData.docNumber).padStart(5, '0')}-{(docSeriesLetter || 'A').toUpperCase()}
+          </strong>
         </div>
       </div>
 
