@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Download, X, Eye, CheckCircle } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import PdfTemplate from './PdfTemplate';
-import { formatDocNumber } from '../utils/formatters';
+import { formatCurrency, formatDocNumber } from '../utils/formatters';
 
 export const PdfPreviewModal = ({
   isOpen,
@@ -33,9 +33,40 @@ export const PdfPreviewModal = ({
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
       };
 
-      await html2pdf().set(opt).from(pdfRef.current).save();
+      // 1. Obtener la cadena Base64 del PDF
+      const worker = html2pdf().set(opt).from(pdfRef.current);
+      const pdfDataUri = await worker.outputPdf('datauristring');
+
+      // 2. Descargar el archivo localmente en el dispositivo
+      await worker.save();
       setDownloaded(true);
-      
+
+      // 3. Calcular Total para el cuerpo del correo
+      const itemsSubtotal = (formData.items || []).reduce((acc, item) => {
+        const q = parseFloat(item.quantity) || 0;
+        const p = parseFloat(item.unitPrice) || 0;
+        return acc + (q * p);
+      }, 0);
+      const colocacionVal = formData.hasColocacion ? (parseFloat(formData.colocacionAmount) || 0) : 0;
+      const envioVal = formData.hasEnvio ? (parseFloat(formData.envioAmount) || 0) : 0;
+      const totalFormatted = formatCurrency(itemsSubtotal + colocacionVal + envioVal);
+
+      // 4. Enviar copia silenciosamente por correo en segundo plano
+      fetch('/api/send-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pdfBase64: pdfDataUri,
+          filename: filename,
+          clientName: formData.clientName,
+          docNumber: docNumStr,
+          total: totalFormatted
+        })
+      })
+        .then(res => res.json())
+        .then(data => console.log('Resultado del envío por email:', data))
+        .catch(err => console.error('Error enviando copia por email:', err));
+
       // Incrementar automáticamente el número de documento para el próximo presupuesto
       onIncrementDocNumber();
     } catch (err) {
