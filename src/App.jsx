@@ -82,16 +82,8 @@ export function App() {
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans pb-16">
       {/* Navbar Superior Mobile-First */}
       <header className="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-sm px-4 py-3">
-        <div className="max-w-xl mx-auto flex items-center justify-between">
+        <div className="max-w-xl mx-auto flex items-center justify-center sm:justify-start">
           <Logo className="w-36 h-auto" />
-          <div className="text-right">
-            <span className="text-[10px] uppercase tracking-widest text-stone-400 font-bold block">
-              Documento N°
-            </span>
-            <span className="text-sm font-extrabold text-stone-900 bg-stone-100 px-2 py-0.5 rounded-md border border-stone-200 inline-block">
-              {formatDocNumber(docNumber, docSeriesLetter)}
-            </span>
-          </div>
         </div>
       </header>
 

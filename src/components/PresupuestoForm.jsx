@@ -69,34 +69,34 @@ export const PresupuestoForm = ({
           Datos del Documento
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          {/* Input 1: Número de Documento (Auto / No Editable) */}
-          <div className="sm:col-span-1">
+        <div className="space-y-4">
+          {/* Campo 1: Número de Documento (No Editable) */}
+          <div>
             <div className="flex justify-between items-center mb-1">
               <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider">
-                Nº Documento (Auto)
+                Nº Documento
               </label>
               <button
                 type="button"
                 onClick={onResetDocNumber}
-                title="Ajustar número correlativo base"
-                className="text-[10px] text-stone-400 underline hover:text-stone-700"
+                title="Editar número correlativo"
+                className="text-xs text-indigo-600 underline font-semibold hover:text-indigo-800"
               >
-                Ajustar
+                Editar
               </button>
             </div>
             <input
               type="text"
               readOnly
               value={String(formData.docNumber).padStart(5, '0')}
-              className="w-full bg-stone-100 border border-stone-300 text-stone-700 font-extrabold px-3 py-2.5 rounded-xl text-center cursor-not-allowed select-none text-sm"
+              className="w-full bg-stone-100 border border-stone-300 text-stone-700 font-extrabold px-4 py-3 rounded-xl cursor-not-allowed select-none text-base tracking-wider"
             />
           </div>
 
-          {/* Input 2: Letra de Serie (Editable) */}
-          <div className="sm:col-span-1">
+          {/* Campo 2: Letra de Serie (Editable) */}
+          <div>
             <label className="block text-xs font-semibold text-indigo-700 uppercase tracking-wider mb-1">
-              Letra de Serie (Editable) *
+              Letra de Serie *
             </label>
             <input
               type="text"
@@ -111,12 +111,12 @@ export const PresupuestoForm = ({
               }}
               placeholder="A"
               title="Ingrese una sola letra para la serie"
-              className="w-full bg-white border-2 border-indigo-500 text-indigo-900 font-extrabold px-3 py-2.5 rounded-xl text-center uppercase focus:ring-2 focus:ring-indigo-500 focus:outline-none text-base shadow-sm"
+              className="w-full bg-white border-2 border-indigo-500 text-indigo-900 font-extrabold px-4 py-3 rounded-xl uppercase focus:ring-2 focus:ring-indigo-500 focus:outline-none text-base tracking-wider shadow-sm"
             />
           </div>
 
-          {/* Fecha de Emisión */}
-          <div className="sm:col-span-1">
+          {/* Campo 3: Fecha de Emisión */}
+          <div>
             <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
               Fecha de Emisión
             </label>
@@ -124,29 +124,29 @@ export const PresupuestoForm = ({
               type="date"
               readOnly
               value={formData.issueDate}
-              className="w-full bg-stone-100 border border-stone-300 text-stone-700 px-3 py-2.5 rounded-xl font-medium focus:outline-none text-sm cursor-not-allowed"
+              className="w-full bg-stone-100 border border-stone-300 text-stone-700 px-4 py-3 rounded-xl font-medium focus:outline-none text-base cursor-not-allowed"
             />
           </div>
 
-          {/* Válido Hasta */}
-          <div className="sm:col-span-1">
+          {/* Campo 4: Válido Hasta */}
+          <div>
             <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+              <Calendar className="w-4 h-4 text-indigo-600" />
               Válido Hasta *
             </label>
             <input
               type="date"
               value={formData.validUntil}
               onChange={(e) => handleInputChange('validUntil', e.target.value)}
-              className="w-full bg-white border border-stone-300 text-stone-900 px-3 py-2.5 rounded-xl font-medium text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              className="w-full bg-white border border-stone-300 text-stone-900 px-4 py-3 rounded-xl font-medium text-base focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
             />
           </div>
         </div>
 
         {/* Indicador del Formato Final resultante */}
-        <div className="text-xs bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 flex items-center justify-between text-stone-600">
-          <span>Identificador de Documento Resultante:</span>
-          <strong className="text-indigo-700 font-extrabold text-sm bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
+        <div className="text-xs bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 flex items-center justify-between text-stone-600">
+          <span>Documento resultante:</span>
+          <strong className="text-indigo-700 font-extrabold text-base bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-200">
             {String(formData.docNumber).padStart(5, '0')}-{(docSeriesLetter || 'A').toUpperCase()}
           </strong>
         </div>
