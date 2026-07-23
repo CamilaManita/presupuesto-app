@@ -26,6 +26,7 @@ export function App() {
     clientName: '',
     clientAddress: '',
     clientDepartment: '',
+    clientPhone: '',
     items: [
       {
         name: '',

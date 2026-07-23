@@ -41,6 +41,7 @@ export default async function handler(req, res) {
       clientName,
       clientAddress,
       clientDepartment,
+      clientPhone,
       items = [],
       hasColocacion,
       colocacionAmount,
@@ -125,6 +126,7 @@ export default async function handler(req, res) {
                 <div style="color: #18181b; font-weight: bold; font-size: 14px;">${clientName || 'Sin especificar'}</div>
                 ${clientAddress ? `<div style="color: #52525b;">${clientAddress}</div>` : ''}
                 ${clientDepartment ? `<div style="color: #52525b;">${clientDepartment}</div>` : ''}
+                ${clientPhone ? `<div style="color: #52525b; font-weight: bold; margin-top: 3px;">Tel: ${clientPhone}</div>` : ''}
               </td>
             </tr>
           </table>

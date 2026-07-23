@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2, Calendar, User, MapPin, Building, DollarSign, Wrench, Truck, Hash } from 'lucide-react';
+import { Plus, Trash2, Calendar, User, MapPin, Building, Phone, DollarSign, Wrench, Truck, Hash } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 
 export const PresupuestoForm = ({
@@ -207,6 +207,22 @@ export const PresupuestoForm = ({
                   className="w-full pl-10 pr-3 py-2.5 border border-stone-300 rounded-xl text-stone-900 font-medium placeholder-stone-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                 />
               </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-stone-600 uppercase tracking-wider mb-1">
+              Teléfono de Contacto
+            </label>
+            <div className="relative">
+              <Phone className="w-4 h-4 text-stone-400 absolute left-3.5 top-3.5" />
+              <input
+                type="tel"
+                placeholder="Ej. 261 555-1234"
+                value={formData.clientPhone || ''}
+                onChange={(e) => handleInputChange('clientPhone', e.target.value)}
+                className="w-full pl-10 pr-3 py-2.5 border border-stone-300 rounded-xl text-stone-900 font-medium placeholder-stone-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              />
             </div>
           </div>
         </div>

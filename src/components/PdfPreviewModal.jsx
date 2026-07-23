@@ -63,6 +63,7 @@ export const PdfPreviewModal = ({
           clientName: formData.clientName,
           clientAddress: formData.clientAddress,
           clientDepartment: formData.clientDepartment,
+          clientPhone: formData.clientPhone,
           items: formData.items,
           hasColocacion: formData.hasColocacion,
           colocacionAmount: formData.colocacionAmount,
