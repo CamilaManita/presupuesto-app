@@ -27,7 +27,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'Vidrieria Vallcanera <onboarding@resend.dev>',
+        from: 'onboarding@resend.dev',
         to: [targetEmail],
         subject: `Nuevo Presupuesto N° ${docNumber || 'S/N'} - ${clientName || 'Cliente'}`,
         html: `
