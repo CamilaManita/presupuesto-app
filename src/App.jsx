@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import Logo from './components/Logo';
+import Navbar from './components/Navbar';
 import PresupuestoForm from './components/PresupuestoForm';
 import PdfPreviewModal from './components/PdfPreviewModal';
-import { getTodayDate, getDefaultValidUntil, formatDocNumber } from './utils/formatters';
+import CutOptimizerView from './components/CutOptimizerView';
+import { getTodayDate, getDefaultValidUntil } from './utils/formatters';
 
 export function App() {
-  // Número incremental persistente en localStorage (inicio en 3600)
+  // Estado para la pestaña activa ('presupuestos' | 'optimizador')
+  const [activeTab, setActiveTab] = useState('presupuestos');
+
+  // --- ESTADO MÓDULO PRESUPUESTOS ---
   const [docNumber, setDocNumber] = useState(() => {
     const saved = localStorage.getItem('vv_presupuesto_doc_number');
     return saved ? parseInt(saved, 10) : 3600;
   });
 
-  // Letra de serie persistente en localStorage (defecto 'A')
   const [docSeriesLetter, setDocSeriesLetter] = useState(() => {
     const saved = localStorage.getItem('vv_presupuesto_series_letter');
     return saved ? saved.toUpperCase().charAt(0) : 'A';
   });
 
-  // Estado global del formulario
   const [formData, setFormData] = useState({
     docNumber: 3600,
     docSeriesLetter: 'A',
@@ -41,7 +43,6 @@ export function App() {
     envioAmount: 0
   });
 
-  // Mantener el docNumber y docSeriesLetter sincronizados en el formData y localStorage
   useEffect(() => {
     localStorage.setItem('vv_presupuesto_doc_number', docNumber.toString());
     const validLetter = docSeriesLetter ? docSeriesLetter.toUpperCase().charAt(0) : 'A';
@@ -68,7 +69,7 @@ export function App() {
   };
 
   const handleResetDocNumber = () => {
-    const userInput = prompt('Ingrese el nuevo número de documento inicial:', docNumber);
+    const userInput = prompt('Ingrese el nuevo número de documento inicial:', docNumber.toString());
     if (userInput !== null) {
       const parsed = parseInt(userInput, 10);
       if (!isNaN(parsed) && parsed > 0) {
@@ -81,41 +82,46 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans pb-16">
-      {/* Navbar Superior Mobile-First */}
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-30 shadow-sm px-4 py-3">
-        <div className="max-w-xl mx-auto flex items-center justify-center sm:justify-start">
-          <Logo className="w-36 h-auto" />
-        </div>
-      </header>
+      {/* Menú Principal de Navegación */}
+      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Contenido Principal Container */}
-      <main className="max-w-xl mx-auto px-4 pt-6">
-        <div className="mb-6 text-center sm:text-left">
-          <h1 className="text-2xl font-extrabold text-stone-900 tracking-tight">
-            Generador de Presupuestos
-          </h1>
-          <p className="text-xs text-stone-500 mt-1">
-            Complete el formulario para emitir y descargar el presupuesto oficial en PDF.
-          </p>
-        </div>
+      {/* Contenido Principal */}
+      <main className="px-4 pt-6">
+        {activeTab === 'presupuestos' && (
+          <div className="max-w-xl mx-auto">
+            <div className="mb-6 text-center sm:text-left">
+              <h1 className="text-2xl font-extrabold text-stone-900 tracking-tight">
+                Generador de Presupuestos
+              </h1>
+              <p className="text-xs text-stone-500 mt-1">
+                Complete el formulario para emitir y descargar el presupuesto oficial en PDF.
+              </p>
+            </div>
 
-        <PresupuestoForm
-          formData={formData}
-          setFormData={setFormData}
-          docSeriesLetter={docSeriesLetter}
-          setDocSeriesLetter={setDocSeriesLetter}
-          onGeneratePdf={handleGeneratePdf}
-          onResetDocNumber={handleResetDocNumber}
-        />
+            <PresupuestoForm
+              formData={formData}
+              setFormData={setFormData}
+              docSeriesLetter={docSeriesLetter}
+              setDocSeriesLetter={setDocSeriesLetter}
+              onGeneratePdf={handleGeneratePdf}
+              onResetDocNumber={handleResetDocNumber}
+            />
+
+            <PdfPreviewModal
+              isOpen={isPreviewOpen}
+              onClose={() => setIsPreviewOpen(false)}
+              formData={formData}
+              onIncrementDocNumber={incrementDocNumber}
+            />
+          </div>
+        )}
+
+        {activeTab === 'optimizador' && (
+          <div className="max-w-6xl mx-auto">
+            <CutOptimizerView />
+          </div>
+        )}
       </main>
-
-      {/* Modal de Previsualización y Descarga */}
-      <PdfPreviewModal
-        isOpen={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
-        formData={formData}
-        onIncrementDocNumber={incrementDocNumber}
-      />
     </div>
   );
 }
